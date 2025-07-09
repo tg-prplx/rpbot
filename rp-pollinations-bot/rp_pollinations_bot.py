@@ -5,8 +5,12 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart, Command
 from aiogram.types import FSInputFile, ReplyKeyboardMarkup, KeyboardButton
 from services.chat_service import ChatService
+from dotenv import load_dotenv
+import os
 
-API_TOKEN = "8041053519:AAEktCzEg7S-nWId9aCeYGW1mqYaVTeUXHw"
+load_dotenv()
+
+API_TOKEN = os.getenv("TELEGRAM_BOT_API")
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API_TOKEN)
