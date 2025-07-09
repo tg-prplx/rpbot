@@ -10,7 +10,7 @@ import os
 
 load_dotenv()
 
-API_TOKEN = os.getenv("TELEGRAM_BOT_API")
+API_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API_TOKEN)
