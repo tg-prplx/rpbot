@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>rp-pollinations-bot</Name>
     <RootNamespace>rp-pollinations-bot</RootNamespace>
-    <InterpreterId>MSBuild|env2|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>Global|VisualStudio|idk</InterpreterId>
     <SuppressConfigureTestFrameworkPrompt>true</SuppressConfigureTestFrameworkPrompt>
     <SuppressPackageInstallationPrompt>True</SuppressPackageInstallationPrompt>
   </PropertyGroup>
@@ -42,15 +42,6 @@
     <Folder Include="services\" />
   </ItemGroup>
   <ItemGroup>
-    <Interpreter Include="env2\">
-      <Id>env2</Id>
-      <Version>3.11</Version>
-      <Description>env2 (Python 3.11)</Description>
-      <InterpreterPath>Scripts\python.exe</InterpreterPath>
-      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
-      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
-      <Architecture>X64</Architecture>
-    </Interpreter>
     <Interpreter Include="env\">
       <Id>env</Id>
       <Version>3.12</Version>
@@ -62,7 +53,6 @@
     </Interpreter>
   </ItemGroup>
   <ItemGroup>
-    <Content Include=".env" />
     <Content Include="api_s\params_img_gen.json" />
     <Content Include="api_s\schema_llm.json" />
     <Content Include="requirements.txt" />

@@ -1,9 +1,11 @@
-from typing import Optional
-import urllib.parse as parse
 import logging as log
 import random as rnd
 import json
-import aiohttp
+import os
+from typing import Optional
+from together import Together
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 class BrokenFileError(Exception):
     pass
@@ -13,10 +15,10 @@ class InvalidParamsError(Exception):
 
 class ImageGenerationConstructor:
     def __init__(
-        self, 
-        seed: Optional[int] = None, 
-        endpoint: str = 'https://image.pollinations.ai/prompt/', 
-        schema_path: str = './api_s/params_img_gen.json'
+        self,
+        seed: Optional[int] = None,
+        schema_path: str = './api_s/params_img_gen.json',
+        model: Optional[str] = None
     ):
         try:
             with open(schema_path, 'r') as f:
@@ -28,51 +30,40 @@ class ImageGenerationConstructor:
             log.critical("File not found or no read permission.")
             raise BrokenFileError("No access or file does not exist!")
 
-        self.model: str = schema.get("model", "turbo")
-        self.width: int = schema.get("width", 512)
-        self.height: int = schema.get("height", 512)
+        self.api_key: Optional[str] = None 
+        self.model: str = model or schema.get("model", "black-forest-labs/FLUX.1-pro")
+        self.width: int = schema.get("width", 1024)
+        self.height: int = schema.get("height", 1024)
+        self.steps: int = schema.get("steps", 30)
         self.default_seed: int = seed if seed is not None else rnd.randint(0, 100_000_000)
-        self.nologo: bool = bool(schema.get("nologo", True))
-        self.enhance: bool = bool(schema.get("enhance", True))
-        self.endpoint: str = endpoint
         self._prompt: str = ""
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._client: Optional[Together] = None
 
     async def __aenter__(self):
-        if self._session is None:
-            self._session = aiohttp.ClientSession()
-            log.info("aiohttp session started.")
+        # get api key
+        if self.api_key is None:
+            self.api_key = await self.fetch_api_key()
+        if self._client is None:
+            self._client = Together(api_key=self.api_key)
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
-        if self._session:
-            await self._session.close()
-            self._session = None
-            log.info("aiohttp session closed.")
+        pass  # no session to close
 
-    async def generate_image(self, prompt: Optional[str] = None, seed: Optional[int] = None):
-        if prompt is not None:
-            self.set_prompt(prompt)
-        if not self._prompt:
-            log.error("Prompt is not set or is empty.")
-            raise InvalidParamsError("Prompt must be set before generating image.")
-
-        seed_to_use = seed if seed is not None else self.default_seed
-        url = self.url_constructor(seed=seed_to_use)
-
-        if not self._session:
-            log.error("aiohttp session is not initialized. Use 'async with' to manage session.")
-            raise RuntimeError("aiohttp session is not initialized.")
-
-        async with self._session.get(url) as response:
-            if response.status == 200:
-                log.info(f"Image generated successfully: {url}")
-                image_bytes = await response.read()
-                return url
-            else:
-                text = await response.text()
-                log.error(f"Failed to generate image: {response.status} {text}")
-                return None
+    async def fetch_api_key(self):
+        import aiohttp
+        url = "https://www.codegeneration.ai/activate-v2"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status != 200:
+                    log.critical(f"Can't fetch API key: {response.status}")
+                    raise InvalidParamsError(f"Failed to get API key: {response.status}")
+                data = await response.json()
+                api_key = data.get("openAIParams", {}).get("apiKey")
+                if not api_key:
+                    raise InvalidParamsError("API key not found in response!")
+                log.info("Got Together.ai API key automatically.")
+                return api_key
 
     def validate_all(self) -> None:
         correct_params: dict = {
@@ -80,8 +71,6 @@ class ImageGenerationConstructor:
             'width': int,
             'height': int,
             'default_seed': int,
-            'nologo': bool,
-            'enhance': bool,
             '_prompt': str
         }
         for key, expected_type in correct_params.items():
@@ -92,20 +81,6 @@ class ImageGenerationConstructor:
                     f"{key} must be of type {expected_type.__name__}, not {type(value).__name__} (actual value: {value})"
                 )
         log.info("Image generation parameters are valid.")
-
-    def url_constructor(self, seed: Optional[int] = None) -> str:
-        self.validate_all()
-        if not self._prompt:
-            log.warning("Empty prompt when constructing URL!")
-        prompt_encoded = parse.quote(self._prompt)
-        actual_seed = seed if seed is not None else self.default_seed
-        url = (
-            f"{self.endpoint}{prompt_encoded}"
-            f"?model={self.model}&width={self.width}&height={self.height}"
-            f"&seed={actual_seed}&referer=http://pollinations.ai&nologo={str(self.nologo).lower()}&enhance={str(self.enhance).lower()}"
-        )
-        log.info(f"Constructed URL: {url}")
-        return url
 
     def set_prompt(self, prompt: str) -> None:
         if not isinstance(prompt, str):
@@ -120,3 +95,49 @@ class ImageGenerationConstructor:
 
     def get_prompt(self) -> str:
         return self._prompt
+
+    def url_constructor(self, *a, **k) -> str:
+        log.warning("url_constructor is not supported for TogetherAI SDK (use generate_image)")
+        return "https://api.together.xyz/v1/images/generate"
+
+    async def generate_image(self, prompt: Optional[str] = None, seed: Optional[int] = None, return_base64: bool = False):
+        if prompt is not None:
+            self.set_prompt(prompt)
+        if not self._prompt:
+            log.error("Prompt is not set or is empty.")
+            raise InvalidParamsError("Prompt must be set before generating image.")
+
+        if self._client is None:
+            raise RuntimeError("Together SDK client not initialized (use async with).")
+
+        payload = {
+            "prompt": self._prompt,
+            "model": self.model,
+            "width": self.width,
+            "height": self.height,
+            "steps": self.steps,
+            "disable_safety_checker": True,
+        }
+        if seed is not None:
+            payload["seed"] = seed
+        else:
+            payload["seed"] = self.default_seed
+
+        loop = asyncio.get_running_loop()
+        # together.images.generate() is sync, so run it in executor
+        def do_gen():
+            resp = self._client.images.generate(**payload)
+            data = resp.data[0]
+            if return_base64 and hasattr(data, "base64"):
+                log.info(f"Image (base64) generated successfully.")
+                return data.base64
+            elif hasattr(data, "url"):
+                log.info(f"Image (url) generated successfully: {data.url}")
+                return data.url
+            else:
+                log.error(f"No valid image url/base64 in response: {data}")
+                return None
+
+        with ThreadPoolExecutor() as pool:
+            result = await loop.run_in_executor(pool, do_gen)
+        return result

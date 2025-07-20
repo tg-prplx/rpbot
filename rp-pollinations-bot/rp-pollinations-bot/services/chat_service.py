@@ -24,20 +24,17 @@ class ChatService:
             image_prompt = match.group(1)
             self.chat.add_assistant_message(resp)
             return resp.replace(f"[{match.group(1)}]", ''), image_prompt
-        return resp if resp.strip() != '' else "*молчит*", image_prompt
-
-    async def handle_image_message(self, path: str, caption: str = ""):
-        self.chat.add_user_image(path, caption)
+        return resp, image_prompt
         
 
-    async def handle_image(self, prompt: str, model: str = ''):
+    async def handle_image(self, prompt: str):
         generated: bool = False
-        async with ImageGenerationConstructor(model=model) as igc:
-            for i in range(3):
-                image_url = await igc.generate_image(prompt)
-                if image_url is not None:
-                    generated = True
-                    break
-            if not generated:
-                raise NotGeneratedError()
+        async with ImageGenerationConstructor() as igc:
+                for i in range(3):
+                    image_url = await igc.generate_image(prompt)
+                    if image_url != None:
+                        generated = True
+                        break
+                if not generated:
+                    raise NotGeneratedError()
         return image_url

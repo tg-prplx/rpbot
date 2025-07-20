@@ -1,6 +1,7 @@
 {
 	"nologo": true,
 	"enhance": true,
+	"model": "turbo",
 	"width": 1024,
 	"height": 1024
 }

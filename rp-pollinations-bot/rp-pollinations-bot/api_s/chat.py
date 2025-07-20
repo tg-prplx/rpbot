@@ -1,10 +1,9 @@
 from api_s.chat_request_constructor import ChatRequestConstructor, Roles
 import openai as ai
-import logging as log
-import base64
+
 
 class Chat:
-    def __init__(self, base_api_url: str = 'https://text.pollinations.ai/openai', api_key: str = 'http://pollinations.ai',
+    def __init__(self, base_api_url: str = 'https://text.pollinations.ai/openai', api_key: str = '',
                  model: str = '', main_prompt: str = '', stream: bool = True, max_tokens: int = 4096):
         self.cr_constructor = ChatRequestConstructor(model, stream = stream, max_tokens=max_tokens)
         if main_prompt != '':
@@ -16,22 +15,19 @@ class Chat:
         generated = True
         for i in range(10):
             try:
-                response = await self.client.chat.completions.create(**config, extra_body={"referrer": "http://pollinations.ai"} )
+                response = await self.client.chat.completions.create(**config)
             except Exception as e:
                 generated = False
             if generated:
                 break
         if self.cr_constructor.stream:
             return response
-        log.info(response)
         content = response.choices[0].message.content
-        if content == None:
-            content = response.choices[0].message.reasoning_content
         sponsor_marker = "**Sponsor**"
         idx = content.find(sponsor_marker)
         if idx != -1:
             content = content[:idx].rstrip()
-        return content if content != "" else "*молчит*"
+        return content
 
     def add_user_message(self, content: str) -> None:
         self.cr_constructor.add_message(Roles.USER, content)
@@ -50,18 +46,3 @@ class Chat:
 
     def change_content(self, mid: int, content: str) -> None:
         self.cr_constructor.change_content(mid, content)
-
-    def add_user_image(self, path: str, caption: str) -> None:
-        with open(path, "rb") as f:
-            b64 = base64.b64encode(f.read()).decode("utf-8")
-        content = {
-            "role": "user",
-            "content": [
-                { "type": "input_text", "text": caption },
-                {
-                    "type": "input_image",
-                    "image_url": f"data:image/jpeg;base64,{b64}",
-                },
-            ],
-        }
-        self.cr_constructor.add_message(Roles.USER, content, image=True)

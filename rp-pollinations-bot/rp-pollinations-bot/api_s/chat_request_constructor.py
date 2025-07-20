@@ -80,17 +80,14 @@ class ChatRequestConstructor:
            log.critical(f'Cannot delete message with id={mid} because it out of range or not be instanse of int.')
            raise IncorrectMessageID()
 
-    def add_message(self, role: Roles, content: str, image: bool = False) -> None:
-        if not image:
-             self.validate_role(role)
-             self.validate_content(content)
-             content_tokens: int = self.count_tokens(content)
-             self.check_content_addability(content_tokens)
-             self.current_tokens += content_tokens
-             self.messages.append({'role': role, 'content': content})
-             log.info(f'Added to messages: {role}: {content}')
-        else:
-            self.messages.append(content)
+    def add_message(self, role: Roles, content: str) -> None:
+         self.validate_role(role)
+         self.validate_content(content)
+         content_tokens: int = self.count_tokens(content)
+         self.check_content_addability(content_tokens)
+         self.current_tokens += content_tokens
+         self.messages.append({'role': role, 'content': content})
+         log.info(f'Added to messages: {role}: {content}')
 
     def remove_message(self, mid: int) -> None:
         self.validate_mid(mid)
