@@ -22,17 +22,17 @@ dp = Dispatcher()
 user_states = {}
 
 MODEL_LIST = [
-    ("OpenAI Fast (censored)", "openai-fast"),
-    ("OpenAI (censored)", "openai-large"),
-    ("Mistral", "mistral"),
-    ("Grok 3 Mini", "grok"),
-    ("DeepSeek(best choice)", "deepseek")
+    ("Gemma 3N (agressive)", "google/gemma-3n-E4B-it"),
+    ("Kimi K2 (cool)", "moonshotai/Kimi-K2-Instruct"),
+    ("LLama4 Scout (fastest)", "meta-llama/Llama-4-Scout-17B-16E-Instruct"),
+    ("DeepSeek (base)", "deepseek-ai/DeepSeek-V3")
 ]
 
 IMAGE_MODEL_LIST = [
     ("FLUX PRO (safe, best quality)", "black-forest-labs/FLUX.1-pro"),
     ("FLUX DEV (more experimental, sometimes more raw)", "black-forest-labs/FLUX.1-dev"),
-    ("FLUX SCHELL (more fast)", "black-forest-labs/FLUX.1-schnell"),
+    ("FLUX SCHELL (fastest)", "black-forest-labs/FLUX.1-schnell"),
+    ("SDXL Turbo (NSFW, No anime)", "turbo")
 ]
 
 def image_model_choice_kb(selected=None):
@@ -56,8 +56,8 @@ def get_state(user_id):
             "last_response": None,
             "images_generated": 0,
             "messages_sent": 0,
-            "model": "deepseek",
-            "image_model": "black-forest-labs/FLUX.1-dev",
+            "model": "deepseek-ai/DeepSeek-V3",
+            "image_model": "turbo",
         }
     return user_states[user_id]
 
@@ -226,6 +226,11 @@ async def model_callback_handler(callback_query: CallbackQuery):
     model_code = callback_query.data.split(":", 1)[1]
     state = get_state(callback_query.from_user.id)
     state["model"] = model_code
+    try:
+        state["chat"].chat.cr_constructor.model = state["model"]
+    except Exception as e:
+        print(e)
+        pass
     await callback_query.answer(f"Модель выбрана: {model_code}")
     await callback_query.message.edit_reply_markup(reply_markup=model_choice_kb(model_code))
     await callback_query.message.answer(f"✅ Теперь используется модель: {model_code}")
@@ -266,7 +271,20 @@ async def dialog_with_bot(message: types.Message):
 
     try:
         await bot.send_chat_action(message.chat.id, "typing")
-        resp, prompt = await chat.handle_message(message.text)
+        try:
+            resp, prompt = await chat.handle_message(message.text)
+        except:
+            try:
+                tks = chat.chat.cr_constructor.max_tokens
+                chat.chat.cr_constructor.max_tokens = 32000
+                resp, prompt = await chat.handle_message(message.text)
+                chat.chat.cr_constructor.max_tokens = tks
+            except:
+                mdl = chat.chat.cr_constructor.model
+                chat.chat.cr_constructor.model = 'deepseek-ai/DeepSeek-V3'
+                resp, prompt = await chat.handle_message(message.text)
+                chat.chat.cr_constructor.model = mdl
+
         state["last_response"] = resp
         state["history"].append((message.text, resp))
         state["messages_sent"] += 1

@@ -6,6 +6,7 @@ from typing import Optional
 from together import Together
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+import aiohttp
 
 class BrokenFileError(Exception):
     pass
@@ -107,6 +108,26 @@ class ImageGenerationConstructor:
             log.error("Prompt is not set or is empty.")
             raise InvalidParamsError("Prompt must be set before generating image.")
 
+        # turbo режим через pollinations
+        if self.model == "turbo":
+            url = (
+                f"https://image.pollinations.ai/prompt/{self._prompt.replace(' ', '%20')}"
+                f"?model=turbo"
+                f"&width={self.width}&height={self.height}"
+                f"&seed={seed or self.default_seed}"
+                f"&referer=http://pollinations.ai"
+            )
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as resp:
+                    if resp.status == 200:
+                        log.info(f"Pollinations image generated successfully: {url}")
+                        return url
+                    else:
+                        text = await resp.text()
+                        log.error(f"Failed to generate pollinations image: {resp.status} {text}")
+                        return None
+
+        # обычная together генерация
         if self._client is None:
             raise RuntimeError("Together SDK client not initialized (use async with).")
 
@@ -124,7 +145,6 @@ class ImageGenerationConstructor:
             payload["seed"] = self.default_seed
 
         loop = asyncio.get_running_loop()
-        # together.images.generate() is sync, so run it in executor
         def do_gen():
             resp = self._client.images.generate(**payload)
             data = resp.data[0]

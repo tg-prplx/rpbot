@@ -1,22 +1,22 @@
 from api_s.chat_request_constructor import ChatRequestConstructor, Roles
-import openai as ai
 import logging as log
 import base64
+import together as ai
 
 class Chat:
-    def __init__(self, base_api_url: str = 'https://text.pollinations.ai/openai', api_key: str = 'http://pollinations.ai',
+    def __init__(self, base_api_url: str = 'https://text.pollinations.ai/openai', api_key: str = '56c8eeff9971269d7a7e625ff88e8a83a34a556003a5c87c289ebe9a3d8a3d2c',
                  model: str = '', main_prompt: str = '', stream: bool = True, max_tokens: int = 4096):
         self.cr_constructor = ChatRequestConstructor(model, stream = stream, max_tokens=max_tokens)
         if main_prompt != '':
             self.cr_constructor.add_message(Roles.SYSTEM, main_prompt)
-        self.client = ai.AsyncOpenAI(base_url=base_api_url, api_key=api_key)
+        self.client = ai.AsyncClient(api_key=api_key)
 
-    async def make_gpt_request(self) -> str | ai.AsyncStream:
+    async def make_gpt_request(self) -> str:
         config = self.cr_constructor.generate_config()
         generated = True
-        for i in range(10):
+        for i in range(3):
             try:
-                response = await self.client.chat.completions.create(**config, extra_body={"referrer": "http://pollinations.ai"} )
+                response = await self.client.chat.completions.create(**config)
             except Exception as e:
                 generated = False
             if generated:
