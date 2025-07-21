@@ -1,3 +1,0 @@
-tiktoken>=0.9
-aiohttp>=3.12
-dotenv
