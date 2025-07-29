@@ -18,7 +18,7 @@ class ImageGenerationConstructor:
     def __init__(
         self,
         seed: Optional[int] = None,
-        schema_path: str = './api_s/params_img_gen.json',
+        schema_path: str = './api/params_img_gen.json',
         model: Optional[str] = None
     ):
         try:

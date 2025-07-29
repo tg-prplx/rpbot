@@ -29,7 +29,7 @@ class Roles(str, Enum):
 
 
 class ChatRequestConstructor:
-    def __init__(self, model: str, max_tokens: int = 2048, token_encoding: str = "cl100k_base", schema_path: str = './api_s/schema_llm.json', stream: bool = True):
+    def __init__(self, model: str, max_tokens: int = 2048, token_encoding: str = "cl100k_base", schema_path: str = './api/schema_llm.json', stream: bool = True):
         self.model: str = model
         self.max_tokens: int = max_tokens
         self.messages: list[dict[str, str]] = []

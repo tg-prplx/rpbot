@@ -24,18 +24,18 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="api_s\__init__.py" />
+    <Compile Include="api\__init__.py" />
     <Compile Include="frontends\api.py" />
-    <Compile Include="api_s\chat.py" />
+    <Compile Include="api\chat.py" />
     <Compile Include="services\chat_service.py" />
-    <Compile Include="api_s\image_generation_constructor.py" />
+    <Compile Include="api\image_generation_constructor.py" />
     <Compile Include="services\image_service.py" />
-    <Compile Include="api_s\chat_request_constructor.py" />
+    <Compile Include="api\chat_request_constructor.py" />
     <Compile Include="rp_pollinations_bot.py" />
     <Compile Include="tests\test_crc.py" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="api_s\" />
+    <Folder Include="api\" />
     <Folder Include="frontends\" />
     <Folder Include="tests\" />
     <Folder Include="resources\" />
@@ -63,8 +63,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".env" />
-    <Content Include="api_s\params_img_gen.json" />
-    <Content Include="api_s\schema_llm.json" />
+    <Content Include="api\params_img_gen.json" />
+    <Content Include="api\schema_llm.json" />
     <Content Include="requirements.txt" />
     <Content Include="config.json" />
   </ItemGroup>

@@ -1,6 +1,6 @@
 from ast import Not
-from api_s.chat import Chat
-from api_s.image_generation_constructor import ImageGenerationConstructor
+from api.chat import Chat
+from api.image_generation_constructor import ImageGenerationConstructor
 import logging as log
 from typing import Optional
 import re

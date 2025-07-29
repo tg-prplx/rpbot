@@ -1,4 +1,4 @@
-from api_s.chat_request_constructor import ChatRequestConstructor, Roles
+from api.chat_request_constructor import ChatRequestConstructor, Roles
 import logging as log
 import base64
 import together as ai
