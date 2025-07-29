@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36221.1 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "rp-pollinations-bot", "rp-pollinations-bot\rp-pollinations-bot.pyproj", "{81B99C5D-ABEA-4226-B94C-AA3D32FEF81E}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "rp-pollinations-bot", "rpbot_pkg/rpbot.pyproj", "{81B99C5D-ABEA-4226-B94C-AA3D32FEF81E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

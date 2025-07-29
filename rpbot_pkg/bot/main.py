@@ -6,12 +6,15 @@ from pathlib import Path
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart, Command
 from aiogram.types import (
-    FSInputFile, ReplyKeyboardMarkup, KeyboardButton,
-    InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+    FSInputFile,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    CallbackQuery,
 )
-sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from services.chat_service import ChatService
+from rpbot_pkg.services.chat_service import ChatService
 from dotenv import load_dotenv
 import os
 import tempfile
