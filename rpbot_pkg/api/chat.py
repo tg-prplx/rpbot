@@ -1,4 +1,4 @@
-from api.chat_request_constructor import ChatRequestConstructor, Roles
+from rpbot_pkg.api.chat_request_constructor import ChatRequestConstructor, Roles
 import logging as log
 import base64
 import together as ai

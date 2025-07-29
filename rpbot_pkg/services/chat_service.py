@@ -1,6 +1,6 @@
 from ast import Not
-from api.chat import Chat
-from api.image_generation_constructor import ImageGenerationConstructor
+from rpbot_pkg.api.chat import Chat
+from rpbot_pkg.api.image_generation_constructor import ImageGenerationConstructor
 import logging as log
 from typing import Optional
 import re
