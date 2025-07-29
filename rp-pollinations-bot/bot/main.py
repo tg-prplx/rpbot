@@ -1,12 +1,16 @@
 import asyncio
 import logging
 import re
+import sys
+from pathlib import Path
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart, Command
 from aiogram.types import (
     FSInputFile, ReplyKeyboardMarkup, KeyboardButton,
     InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 )
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 from services.chat_service import ChatService
 from dotenv import load_dotenv
 import os
@@ -284,6 +288,7 @@ async def dialog_with_bot(message: types.Message):
                 await mdv2(message, resp)
         if prompt:
             image_model = state.get("image_model", "turbo")
+            await message.answer("🎨 Генерирую картинку...")
             image_url_or_bytes = await chat.handle_image(prompt, model=image_model)
             state["images_generated"] += 1
             if isinstance(image_url_or_bytes, str) and image_url_or_bytes.startswith("http"):
@@ -305,7 +310,7 @@ async def dialog_with_bot(message: types.Message):
     "/help", "/reset", "/history", "/repeat", "/stats", "/setcharacter", "/model", "/imagemodel"
 ))
 async def unknown_command(message: types.Message):
-    await mdv2(message, "Не знаю такую команду 🙈", reply_markup=kb_main())
+    await mdv2(message, "Не знаю такую команду 🙈 Используй /help, чтобы узнать доступные.", reply_markup=kb_main())
 
 if __name__ == "__main__":
     asyncio.run(dp.start_polling(bot))
